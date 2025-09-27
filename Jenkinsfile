@@ -2,7 +2,7 @@ pipeline {
 agent any
 stages {
 stage('Checkout') { steps { checkout scm } }
-stage('Build') { steps { sh 'make -f Makefile.mk' } }
+stage('Build') { steps { sh 'make -f Makefile' } }
 stage('Static Analysis') { steps { sh 'cppcheck --enable=all altitude_*.c || true' } }
 stage('Unit Tests') {
 steps {
