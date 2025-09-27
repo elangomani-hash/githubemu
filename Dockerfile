@@ -2,7 +2,8 @@
 FROM ubuntu:22.04
 
 # Install necessary build tools (like gcc, g++)
-RUN apt-get update && apt-get install -y build-essential
+RUN apt-get update && apt-get install -y build-essential apt-utils
+RUN apt-get update && apt-get install -y cppcheck
 
 # Set the working directory inside the container
 WORKDIR /app
