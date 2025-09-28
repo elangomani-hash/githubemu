@@ -1,0 +1,160 @@
+Started by user Elangomani M
+Obtained Jenkinsfile from git https://github.com/elangomani-hash/githubemu.git
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/lib/jenkins/workspace/pipeline_demo
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Declarative: Checkout SCM)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential 1847e4f4-4b14-4878-a2c2-f090a27b005d
+ > /usr/bin/git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/pipeline_demo/.git # timeout=10
+Fetching changes from the remote Git repository
+ > /usr/bin/git config remote.origin.url https://github.com/elangomani-hash/githubemu.git # timeout=10
+Fetching upstream changes from https://github.com/elangomani-hash/githubemu.git
+ > /usr/bin/git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+using GIT_ASKPASS to set credentials 
+ > /usr/bin/git fetch --tags --force --progress -- https://github.com/elangomani-hash/githubemu.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > /usr/bin/git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 36c81131476aeb8ea1b3069ebca498096b4a4e1a (refs/remotes/origin/main)
+ > /usr/bin/git config core.sparsecheckout # timeout=10
+ > /usr/bin/git checkout -f 36c81131476aeb8ea1b3069ebca498096b4a4e1a # timeout=10
+Commit message: "Update Jenkinsfile for makefile"
+ > /usr/bin/git rev-list --no-walk 36c81131476aeb8ea1b3069ebca498096b4a4e1a # timeout=10
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (Checkout)
+[Pipeline] checkout
+Selected Git installation does not exist. Using Default
+The recommended git tool is: NONE
+using credential 1847e4f4-4b14-4878-a2c2-f090a27b005d
+ > /usr/bin/git rev-parse --resolve-git-dir /var/lib/jenkins/workspace/pipeline_demo/.git # timeout=10
+Fetching changes from the remote Git repository
+ > /usr/bin/git config remote.origin.url https://github.com/elangomani-hash/githubemu.git # timeout=10
+Fetching upstream changes from https://github.com/elangomani-hash/githubemu.git
+ > /usr/bin/git --version # timeout=10
+ > git --version # 'git version 2.34.1'
+using GIT_ASKPASS to set credentials 
+ > /usr/bin/git fetch --tags --force --progress -- https://github.com/elangomani-hash/githubemu.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > /usr/bin/git rev-parse refs/remotes/origin/main^{commit} # timeout=10
+Checking out Revision 36c81131476aeb8ea1b3069ebca498096b4a4e1a (refs/remotes/origin/main)
+ > /usr/bin/git config core.sparsecheckout # timeout=10
+ > /usr/bin/git checkout -f 36c81131476aeb8ea1b3069ebca498096b4a4e1a # timeout=10
+Commit message: "Update Jenkinsfile for makefile"
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Build)
+[Pipeline] sh
++ make -f Makefile.mk
+make: Nothing to be done for 'all'.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Static Analysis)
+[Pipeline] sh
++ cppcheck --enable=all altitude_receiver.c altitude_streamer.c
+Checking altitude_receiver.c ...
+1/2 files checked 54% done
+Checking altitude_streamer.c ...
+2/2 files checked 100% done
+nofile:0:0: information: Cppcheck cannot find all the include files (use --check-config for details) [missingIncludeSystem]
+
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Unit Tests)
+[Pipeline] sh
++ echo 215723
++ sleep+  1
+./altitude_receiver 5000 received_ut.csv
++ ./tests/run_unit_tests.sh
+Running unit tests...
+Connected to 127.0.0.1:5000
+Sent sample  1: 1007.387 ft
+Sent sample  2: 1157.387 ft
+Sent sample  3: 1166.593 ft
+Done sending. Closing socket.
+Streamer test passed
+All unit tests passed!
++ cat receiver_ut.pid
++ kill 215723
+/var/lib/jenkins/workspace/pipeline_demo@tmp/durable-2f7e17a1/script.sh.copy: 13: kill: No such process
+
++ true
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Integration Test)
+[Pipeline] sh
++ echo 215760
++ sleep 1
++ ./altitude_receiver 6000 received_ci.csv
++ ./altitude_streamer 127.0.0.1 6000 5 ci_out.csv 2
+Connected to 127.0.0.1:6000
+Sent sample  1: 1008.961 ft
+Sent sample  2: 1003.048 ft
+Sent sample  3: 1153.048 ft
+Sent sample  4: 1161.062 ft
+Sent sample  5: 1157.437 ft
+Done sending. Closing socket.
++ cat server.pid
++ kill 215760
+/var/lib/jenkins/workspace/pipeline_demo@tmp/durable-7201de72/script.sh.copy: 6: kill: No such process
+
++ true
++ grep Total samples received: 5 server.log
+Total samples received: 5
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Docker Build)
+[Pipeline] sh
++ docker build -t myorg/altitude-stream:latest .
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  209.4kB
+Step 1/8 : FROM ubuntu:22.04
+ ---> b1dc6972547a
+Step 2/8 : RUN apt-get update && apt-get install -y build-essential apt-utils
+ ---> Using cache
+ ---> 570ce158a733
+Step 3/8 : RUN apt-get update && apt-get install -y cppcheck
+ ---> Using cache
+ ---> 67b513e784e1
+Step 4/8 : WORKDIR /app
+ ---> Using cache
+ ---> 774864f52833
+Step 5/8 : COPY . /app
+ ---> a559ebc8e10d
+Step 6/8 : RUN make -f Makefile.mk
+ ---> Running in fa84f5c7be7d
+make: Nothing to be done for 'all'.
+ ---> Removed intermediate container fa84f5c7be7d
+ ---> 7c29a7d48a95
+Step 7/8 : EXPOSE 5000
+ ---> Running in 7f3fbcf3d80f
+ ---> Removed intermediate container 7f3fbcf3d80f
+ ---> 16a1e8c72a46
+Step 8/8 : CMD ["./altitude_receiver", "5000", "received.csv"]
+ ---> Running in b039d19bb176
+ ---> Removed intermediate container b039d19bb176
+ ---> 74cb697b5e8b
+Successfully built 74cb697b5e8b
+Successfully tagged myorg/altitude-stream:latest
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
